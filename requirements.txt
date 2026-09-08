@@ -1,0 +1,15 @@
+# analysis layer (reproduces every table from the saved rankings)
+pandas==2.2.1
+numpy
+scipy
+matplotlib
+
+# regenerating rankings from the raw data (not needed to reproduce the tables)
+torch==2.2.1
+transformers==5.0.0
+accelerate==1.12.0
+sentence-transformers==5.2.2
+datasets==2.19.1
+bm25s
+PyStemmer
+tqdm
