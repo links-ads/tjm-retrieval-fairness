@@ -48,7 +48,7 @@ def parse_args() -> argparse.Namespace:
 def find_run(runs_dir: Path, system: str, split: str, mode: str, pool: str) -> Path | None:
     for path in sorted(p for ext in ("*.json", "*.json.gz")
                        for p in (runs_dir / system).rglob(ext)):
-        if "reference" in path.name or "publications" in str(path) or split not in str(path):
+        if "reference" in path.name or split not in str(path):
             continue
         if path.name.startswith(f"{mode}_{pool}"):
             return path

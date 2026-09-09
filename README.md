@@ -100,6 +100,6 @@ uv run -m tjm.evaluate --model qwen8 --split triplets --evaluation-mode job_to_t
 
 ## Scope
 
-This repository covers the paper's zero-shot, cascade and fairness results. The profile-enrichment
-experiments with publication evidence, the PU-learning training code, and the fine-tuned checkpoints
-live in the parent repository and are deliberately not included here.
+This repository covers the paper's zero-shot, cascade and fairness results. The PU-learning
+training code and the fine-tuned checkpoints live in the parent repository and are deliberately not
+included here.

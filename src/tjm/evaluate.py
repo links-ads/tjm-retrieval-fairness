@@ -5,13 +5,9 @@ from pathlib import Path
 from tqdm import tqdm
 
 from tjm.data.dataloader import InnoTripletForValidationDataset
-from tjm.data.dataloader_pub import InnoTripletWithPublicationForValidationDataset
 from tjm.metrics.ranking import evaluate_run
 from tjm.models.load_model import load_model
-from tjm.utils import (
-    save_eval_results, save_predictions_json, save_references_json,
-    save_eval_pub_results, save_predictions_pub_json,
-)
+from tjm.utils import save_eval_results, save_predictions_json, save_references_json
 
 
 def build_ir_payload(
@@ -186,51 +182,6 @@ if __name__ == "__main__":
         default="outputs",
     )
 
-    # publication args
-    parser.add_argument(
-        "--test-publications",
-        action="store_true",
-        help="Whether to use the dataloader that enriches resumes with publication data",
-    )
-    parser.add_argument(
-        "--include-publications",
-        action="store_true",
-        help="Whether to use the dataloader that enriches resumes with publication data",
-    )
-    parser.add_argument(
-            "--publication-sequence",
-            type=str,
-            nargs="+",
-            choices=["additional", "first", "last"],
-            default=None,
-            help=(
-                "Publication sequence filter(s). Provide one or more values, e.g. "
-                "--publication-sequence first additional. "
-                "If omitted, no sequence filter is applied."
-            ),
-    )
-    parser.add_argument(
-        "--publication-selection-mode",
-        type=str,
-        choices=["random", "by_date"],
-        default="random",
-        help="How to select publications when multiple match the sequence filter",
-    )
-    parser.add_argument(
-        "--publication-text-fields",
-        type=str,
-        choices=["title", "abstract", "both"],
-        default="both",
-        help="Which publication text fields to include in the enriched candidate text",
-    )
-    parser.add_argument(
-        "--max-publications",
-        type=int,
-        default=5,
-        help="Maximum number of publications to include per candidate",
-    )
-    
-
     args = parser.parse_args()
     k_values = parse_k_list(args.k)
 
@@ -238,23 +189,11 @@ if __name__ == "__main__":
 
     resolved_device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
 
-    if args.test_publications:
-        dataloader = InnoTripletWithPublicationForValidationDataset(
-            data_dir=args.data_dir,
-            split=args.split,
-            evaluation_mode=args.evaluation_mode,
-            include_publications=args.include_publications,
-            publication_sequence=args.publication_sequence,
-            publication_selection_mode=args.publication_selection_mode,
-            publication_text_fields=args.publication_text_fields,
-            max_publications=args.max_publications,
-        )
-    else:
-        dataloader = InnoTripletForValidationDataset(
-            data_dir=args.data_dir,
-            split=args.split,
-            evaluation_mode=args.evaluation_mode,
-        )
+    dataloader = InnoTripletForValidationDataset(
+        data_dir=args.data_dir,
+        split=args.split,
+        evaluation_mode=args.evaluation_mode,
+    )
     dataset, candidates_pool = dataloader.load()
 
     model = load_model(
@@ -288,50 +227,23 @@ if __name__ == "__main__":
     results_dir.mkdir(parents=True, exist_ok=True)
     output_dir = Path(args.output_dir)
 
-    if args.test_publications:
-        publication_config = {
-            "include_publications": args.include_publications,
-            "publication_sequence": args.publication_sequence,
-            "publication_selection_mode": args.publication_selection_mode,
-            "publication_text_fields": args.publication_text_fields,
-            "max_publications": args.max_publications,
-        }
-        json_file = save_predictions_pub_json(
-            predictions,
-            results_dir / f"{args.split}_predictions_with_publications",
-            args.evaluation_mode,
-            args.candidate_pool,
-            publication_config=publication_config,
-        )
-        results_csv = save_eval_pub_results(
-            metrics,
-            output_dir / f"{args.split}_results_with_publications.csv",
-            safe_model_name,
-            args.model_version,
-            args.preprocessing,
-            args.evaluation_mode,
-            args.candidate_pool,
-            publication_config=publication_config,
-            n_queries=len(per_query),
-        )
-    else:
-        json_file = save_predictions_json(
-            predictions,
-            results_dir / f"{args.split}",
-            args.evaluation_mode,
-            args.candidate_pool,
-        )
-        save_references_json(references, results_dir / f"{args.split}", args.evaluation_mode)
-        results_csv = save_eval_results(
-            metrics,
-            output_dir / f"{args.split}_eval_results.csv",
-            safe_model_name,
-            args.model_version,
-            args.preprocessing,
-            args.evaluation_mode,
-            args.candidate_pool,
-            n_queries=len(per_query),
-        )
+    json_file = save_predictions_json(
+        predictions,
+        results_dir / f"{args.split}",
+        args.evaluation_mode,
+        args.candidate_pool,
+    )
+    save_references_json(references, results_dir / f"{args.split}", args.evaluation_mode)
+    results_csv = save_eval_results(
+        metrics,
+        output_dir / f"{args.split}_eval_results.csv",
+        safe_model_name,
+        args.model_version,
+        args.preprocessing,
+        args.evaluation_mode,
+        args.candidate_pool,
+        n_queries=len(per_query),
+    )
 
     print(f"\nResults saved to:")
     print(f"  - {json_file}")

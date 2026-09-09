@@ -85,7 +85,7 @@ def find_run(runs_dir: Path, system: str, split: str, mode: str, pool: str) -> P
     for path in sorted(p for ext in ("*.json", "*.json.gz")
                        for p in (runs_dir / system).rglob(ext)):
         name = path.name
-        if "reference" in name or "publications" in str(path):
+        if "reference" in name:
             continue
         if split not in str(path):
             continue
