@@ -1,5 +1,6 @@
 from .cascade import cascade_rankings, first_stage_recall, load_run
 from .cascade_grid import build_cascade_grid
+from .exposure_lp import exposure_lp_rerank
 from .fairness_ranking import (
     amortized_attention,
     exposure_ratios,
@@ -35,6 +36,7 @@ __all__ = [
     "skew_at_k",
     "ndkl",
     "fair_rerank",
+    "exposure_lp_rerank",
     "exposure_ratios",
     "amortized_attention",
     "align_per_query",

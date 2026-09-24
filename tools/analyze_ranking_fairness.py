@@ -18,9 +18,11 @@ from pathlib import Path
 
 import pandas as pd
 
+from tjm.metrics.significance import DEFAULT_SEED
 from tjm.metrics import (
     amortized_attention,
     build_references,
+    exposure_lp_rerank,
     exposure_ratios,
     fair_rerank,
     individual_classification_rates,
@@ -32,6 +34,7 @@ SYSTEMS = [("qwen3_embedding", "Qwen3-Emb.$_{0.6B}$"), ("qwen8", "Qwen3-Rerank$_
 POOLS = [("full", "Full-Pool", 10), ("observed", "Application-Pool", 1)]
 GROUPS = ("Female", "Male")
 PROTECTED = "Female"
+LP_WINDOW = 100
 
 
 def parse_args() -> argparse.Namespace:
@@ -42,6 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--demographics", type=str, default="data/talents_demographics.csv")
     parser.add_argument("--output-dir", type=str, default="outputs/fairness_analysis")
     parser.add_argument("--alpha", type=float, default=0.1, help="FA*IR significance level")
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Seed for sampling the LP ranking")
     return parser.parse_args()
 
 
@@ -55,11 +59,14 @@ def find_run(runs_dir: Path, system: str, split: str, mode: str, pool: str) -> P
     return None
 
 
-def load_rankings(path: Path) -> dict[str, list[str]]:
+def load_rankings(path: Path) -> tuple[dict[str, list[str]], dict[str, dict[str, float]]]:
+    """Ranked candidate ids per query, and the scores behind them that the LP treats as merit."""
     opener = gzip.open if str(path).endswith(".gz") else open
     with opener(path, "rt") as handle:
         payload = json.load(handle)
-    return {q: [e["candidate_id"] for e in r] for q, r in payload.items()}
+    rankings = {q: [e["candidate_id"] for e in r] for q, r in payload.items()}
+    scores = {q: {e["candidate_id"]: e["score"] for e in r} for q, r in payload.items()}
+    return rankings, scores
 
 
 def measure(rankings, references, gender, k, protected_share) -> dict:
@@ -98,7 +105,7 @@ def main() -> None:
     rows = []
     for system, label in SYSTEMS:
         for pool, pool_label, k in POOLS:
-            rankings = load_rankings(find_run(runs_dir, system, args.split, "job_to_talent", pool))
+            rankings, scores = load_rankings(find_run(runs_dir, system, args.split, "job_to_talent", pool))
             rankings = {q: r for q, r in rankings.items() if len(r) >= 2}
             # target distribution: the pool the ranking was drawn from, so the measures isolate the
             # ranking rather than restating the corpus imbalance
@@ -115,6 +122,14 @@ def main() -> None:
             }
             after = measure(reranked, references, gender, k, share)
             rows.append({"model": label, "pool": pool_label, "ranking": "FA*IR", **after})
+
+            constrained = {
+                q: exposure_lp_rerank(r, scores[q], gender, PROTECTED, "Male",
+                                      k=min(len(r), LP_WINDOW), seed=args.seed)
+                for q, r in rankings.items()
+            }
+            rows.append({"model": label, "pool": pool_label, "ranking": "LP",
+                         **measure(constrained, references, gender, k, share)})
             print(f"{label:22s} {pool_label:17s} target Female share {share[PROTECTED]*100:.1f}%", flush=True)
 
     frame = pd.DataFrame(rows)
