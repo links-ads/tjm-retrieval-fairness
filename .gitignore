@@ -6,4 +6,6 @@ __pycache__/
 .coverage
 htmlcov/
 .DS_Store
-tests_here/
+tests/
+paper/
+data/
