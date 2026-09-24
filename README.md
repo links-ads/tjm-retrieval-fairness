@@ -1,8 +1,7 @@
 # Fair Among Whom?
 
-Code and saved rankings for *Fair Among Whom? Evaluating Gender Fairness in Job–Talent Matching
-Across Candidate Scopes* — F. D'Asaro, M. Testa, J. J. Márquez Villacís, F. Dominici, G. Rizzo
-(LINKS Foundation ADS; Politecnico di Torino DAUIN).
+Code and saved rankings for the paper *Fair Among Whom? Evaluating Gender Fairness in Job–Talent
+Matching Across Candidate Scopes*.
 
 ## Motivation
 
@@ -23,8 +22,8 @@ number is uninterpretable without the pool it came from.
 - **A fairness audit instantiating it.** Representation (Skew) and merit-aware (DTR, DIR) measures
   disagree across four architecturally distinct models; the disagreement reverses between pools
   because of who applies rather than any ranker; neither intervention resolves both views alone.
-- **A real-world TJM dataset.** Recruitment outcomes from the InnoNext platform, with self-reported
-  gender for 85.8% of ranked talents.
+- **A real-world TJM dataset.** Recruitment outcomes from a live talent-job matching platform, with
+  self-reported gender for 85.8% of ranked talents.
 
 ## Key result
 
@@ -62,8 +61,3 @@ Each overwrites `outputs/` with identical values. Regenerating rankings from scr
 Fifteen systems ship though the paper tabulates a subset: the Holm correction runs over the whole
 family tested against BM25, so dropping the rest would silently weaken it.
 
-## Acknowledgment
-
-Part of the InnoNext project, funded by the European Union's Horizon Europe research and innovation
-programme under grant agreement No. 101160467. Views and opinions expressed are those of the authors
-only and do not necessarily reflect those of the European Union.

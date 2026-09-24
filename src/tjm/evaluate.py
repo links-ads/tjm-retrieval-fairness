@@ -95,11 +95,11 @@ def compute_recall_at_k(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Evaluate IR models on InnoNext triplets")
+    parser = argparse.ArgumentParser(description="Evaluate IR models on talent-job triplets")
     parser.add_argument(
         "--data-dir",
         type=str,
-        default="data/innonext_dataset",
+        default="data",
         help="Directory containing data",
     )
     parser.add_argument(
@@ -111,8 +111,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--preprocessing",
         type=str,
-        default="links",
-        help="Collaborator folder under data/ containing jobs.csv and resumes.csv (e.g. links, zucchetti)",
+        default="base",
+        help="Preprocessing variant label recorded alongside the run",
     )
     parser.add_argument(
         "--split",

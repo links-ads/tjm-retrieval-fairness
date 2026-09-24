@@ -4,11 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tjm"
-authors = [
-    {name = "Federico D'Asaro", email = "federico.dasaro@linksfoundation.com"},
-    {name = "Juan Jose Marquez Villacis", email = "juan.marquez@linksfoundation.com"},
-    {name = "Mario Testa", email = "mario.testa@linksfoundation.com"},
-]
 description = "Dense retrieval for talent-job matching: zero-shot evaluation, retrieve-then-rerank cascades, and ranking fairness"
 readme = "README.md"
 license = { file = "LICENSE" }
